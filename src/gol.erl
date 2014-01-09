@@ -26,8 +26,7 @@ get_next_step(D) ->
 
 get_next_step(D, D1) ->
   Keys = dict:fetch_keys(D),
-  NextDic = process_keys(Keys, D, D1),
-  NextDic.
+  process_keys(Keys, D, D1).
 %---
 
 process_keys([H|T], D, D1) ->
@@ -52,8 +51,7 @@ process_cells([], _, D1) -> D1.
 process_cell({X,Y}, D, D1) ->
   case is_alive({X,Y}, D) of
     true ->
-      DD = dict:store({X,Y}, 1, D1),
-      DD;
+      dict:store({X,Y}, 1, D1);
     false -> D1
   end.
 %---
@@ -68,8 +66,7 @@ is_alive({X, Y}, D) ->
   end.
 %---
 
-alive_count(List, D) ->
-  alive_count(List, 0, D).
+alive_count(List, D) -> alive_count(List, 0, D).
 
 alive_count([H|T], R, D) ->
   case dict:is_key(H, D) of
@@ -81,5 +78,5 @@ alive_count([], R, _) -> R.
 %---
 
 get_neigh_list({X, Y}) ->
-  [{X-1, Y-1}, {X, Y-1}, {X+1, Y-1}, {X-1, Y}, {X+1, Y}, {X-1, Y+1}, {X, Y+1}, {X+1, Y+1} ].
+  [{X-1, Y-1}, {X, Y-1}, {X+1, Y-1}, {X-1, Y}, {X+1, Y}, {X-1, Y+1}, {X, Y+1}, {X+1, Y+1}].
 %---

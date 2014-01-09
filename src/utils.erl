@@ -13,23 +13,27 @@ print_content([H|T], D) ->
 
 print_content([], _) -> ok.
 %---
+
 %reads file and prepare initial dict
 read_file(FileName) ->
   {ok, Data} = file:read_file(FileName),
-  Matrix = make_matrix(parse_data(Data)),
-  Dict = make_dict(Matrix),
-  Dict.
+  ParsedData = string:tokens(binary_to_list(Data), "\r\n"),
+  Matrix = make_matrix(ParsedData),
+  make_dict(Matrix).
 %---
+
 %prety prints to console
 pprint(D, Scale) ->
   Str = make_string(D, Scale),
   io:fwrite(Str).
 %---
+
 %write to file
 write_file(FileName, D, Scale) ->
   Str = make_string(D, Scale, []),
   file:write_file(FileName, list_to_binary(Str), [append]).
 %---
+
 make_string(D, Scale) ->
   make_string(D, Scale, []).
 
@@ -46,15 +50,11 @@ make_string([], _, _, R) -> [10 | lists:reverse(R)].
 
 make_line(X, [HY|TY], D, R) ->
   case dict:is_key({HY, X}, D) of
-    true ->
-      R1 = [35 | R];
-    false ->
-      R1 = [46 | R]
-  end,
-  make_line(X, TY, D, R1);
+    true -> make_line(X, TY, D,  [35 | R]);
+    false -> make_line(X, TY, D,  [46 | R])
+  end;
 
-make_line(_, [], _, R) ->
-  [10 | R].
+make_line(_, [], _, R) -> [10 | R].
 %---
 
 prepare_matrix(Scale) ->
@@ -69,13 +69,8 @@ prepare_matrix([], _, R) -> R.
 %private
 
 print_key_value(Key, D) ->
-  V = dict:fetch(Key, D),
-  io:fwrite("~p => ~p~n", [Key, V]).
-%---
-
-parse_data(Data) ->
-  ListOfStrings = string:tokens(binary_to_list(Data), "\r\n"),
-  ListOfStrings.
+  Value = dict:fetch(Key, D),
+  io:fwrite("~p => ~p~n", [Key, Value]).
 %---
 
 make_matrix(ListOfStrings) ->
@@ -97,13 +92,10 @@ make_list([H|T], R) ->
     false -> make_list(T, [0|R])
   end;
 
-make_list([], R) ->
-  lists:reverse(R).
+make_list([], R) -> lists:reverse(R).
 %---
 
-make_dict(Matrix) ->
-  D = dict:new(),
-  make_dict(Matrix, D, 1, 1).
+make_dict(Matrix) -> make_dict(Matrix, dict:new(), 1, 1).
 
 make_dict([H|T], D, X, Y) ->
   case is_list(H) of
