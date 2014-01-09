@@ -1,22 +1,23 @@
 -module(gol).
 -compile(export_all).
--import(utils, [print_content/1, read_file/1, pprint/2]).
+-import(utils, [print_content/1, read_file/1, pprint/2, write_file/3]).
 
-main() ->
-  D0 = read_file("../data/init_map.txt"),
-  pprint(D0, 12),
-  D1 = make_steps(D0, 10),
-  pprint(D1, 12),
-  erlang:halt().
+main(InputFile, OutputFile, Steps, Scale) ->
+  D0 = read_file(InputFile),
+  file:delete(OutputFile),
+  write_file(OutputFile, D0, Scale),
+  DLast = make_steps(D0, Steps, Scale, OutputFile),
+  DLast.
+%%   erlang:halt().
 
-make_steps(D, Count) when Count > 0 ->
+%performs steps
+make_steps(D, Count, Scale, OutputFile) when Count > 0 ->
   D1 = get_next_step(D),
-  pprint(D1, 12),
-  io:fwrite("-----~n"),
-  make_steps(D1, Count - 1);
+  write_file(OutputFile, D1, Scale),
+  make_steps(D1, Count - 1, Scale, OutputFile);
 
-make_steps(D, _) -> D.
-
+make_steps(D, _, _, _) -> D.
+%---
 %gets next dictionary
 get_next_step(D) ->
   D1 = dict:new(),
@@ -28,15 +29,12 @@ get_next_step(D, D1) ->
   NextDic.
 %---
 
-
 process_keys([H|T], D, D1) ->
-  Neigh = get_neigh_list(H),
+  Neigh = [H | get_neigh_list(H)],
   DD = process_cells(Neigh, D, D1),
   process_keys(T, D, DD);
 
-process_keys([], _, D1) ->
-  io:fwrite("~n"),
-  D1.
+process_keys([], _, D1) -> D1.
 %---
 
 process_cells([H|T], D, D1) ->
@@ -51,7 +49,6 @@ process_cells([], _, D1) -> D1.
 %---
 
 process_cell({X,Y}, D, D1) ->
-  io:fwrite("."),
   case is_alive({X,Y}, D) of
     true ->
       DD = dict:store({X,Y}, 1, D1),
@@ -62,8 +59,7 @@ process_cell({X,Y}, D, D1) ->
 %---
 
 is_alive({X, Y}, D) ->
-  All = get_neigh_list({X,Y}),
-  Neigh = lists:filter(fun({X1,Y1}) -> not((X1==X) and (Y1==Y)) end, All),
+  Neigh = get_neigh_list({X,Y}),
   Count = alive_count(Neigh, D),
   case Count of
      2 -> dict:is_key({X, Y}, D);
@@ -85,13 +81,5 @@ alive_count([], R, _) -> R.
 %---
 
 get_neigh_list({X, Y}) ->
-  get_neigh_list({X, Y}, [-1,0,1], [-1,0,1], []).
-
-get_neigh_list({X,Y}, [HX|TX], [HY|TY], R) ->
-  get_neigh_list({X,Y}, TX, [HY|TY], [{X+HX, Y+HY} | R]);
-
-get_neigh_list({X, Y}, [], [_|TY], R) ->
-  get_neigh_list({X,Y}, [-1,0,1], TY, R);
-
-get_neigh_list(_, _, [], R) -> R.
+  [{X-1, Y-1}, {X, Y-1}, {X+1, Y-1}, {X-1, Y}, {X+1, Y}, {X-1, Y+1}, {X, Y+1}, {X+1, Y+1} ].
 %---

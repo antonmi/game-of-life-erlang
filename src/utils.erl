@@ -22,27 +22,39 @@ read_file(FileName) ->
 %---
 %prety prints to console
 pprint(D, Scale) ->
+  Str = make_string(D, Scale),
+  io:fwrite(Str).
+%---
+%write to file
+write_file(FileName, D, Scale) ->
+  Str = make_string(D, Scale, []),
+  file:write_file(FileName, list_to_binary(Str), [append]).
+%---
+make_string(D, Scale) ->
+  make_string(D, Scale, []).
+
+make_string(D, Scale, R) ->
   Matrix = prepare_matrix(Scale),
-  pprint(Matrix, D, Scale).
+  make_string(Matrix, D, Scale, R).
 
-pprint([H|T], D, Scale) ->
-  print_line(Scale - length(T), H, D),
-  pprint(T, D, Scale);
+make_string([H|T], D, Scale, R) ->
+  R1 = make_line(Scale - length(T), H, D, R),
+  make_string(T, D, Scale, R1);
 
-pprint([], _, _) -> ok.
+make_string([], _, _, R) -> [10 | lists:reverse(R)].
 %---
 
-print_line(X, [HY|TY], D) ->
+make_line(X, [HY|TY], D, R) ->
   case dict:is_key({HY, X}, D) of
     true ->
-      io:fwrite("~p", [1]);
+      R1 = [35 | R];
     false ->
-      io:fwrite("~p", [0])
+      R1 = [46 | R]
   end,
-  print_line(X, TY, D);
+  make_line(X, TY, D, R1);
 
-print_line(_, [], _) ->
-  io:fwrite("~n").
+make_line(_, [], _, R) ->
+  [10 | R].
 %---
 
 prepare_matrix(Scale) ->
@@ -53,11 +65,6 @@ prepare_matrix([_|T], Scale, R) ->
 
 prepare_matrix([], _, R) -> R.
 %---
-
-%TODO write file
-write_file() ->
-  Bin = "..." ++ "\n" ++ "###" ++ "\n" ++ "..." ++ "\n",
-  file:write_file("output.txt", Bin).
 
 %private
 
@@ -85,7 +92,7 @@ make_list(Str) ->
   make_list(Str, []).
 
 make_list([H|T], R) ->
-  case H == 49 of
+  case H == 35 of
     true -> make_list(T, [1|R]);
     false -> make_list(T, [0|R])
   end;
