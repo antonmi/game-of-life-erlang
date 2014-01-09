@@ -1,7 +1,11 @@
 Game of life
 ==========
+```$ cd gol
+
 ```$ erl -make```
 
-```$ cd ebin```
+edit `data/input.txt`
 
-```$ erl -noshell -run gol main```
+```$ erl -noshell -pa ebin/ -run gol main STEP_COUNT MATRIX_SIZE```
+
+see `data/output.txt`

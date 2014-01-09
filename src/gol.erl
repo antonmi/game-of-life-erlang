@@ -2,13 +2,14 @@
 -compile(export_all).
 -import(utils, [print_content/1, read_file/1, pprint/2, write_file/3]).
 
-main(InputFile, OutputFile, Steps, Scale) ->
+main(Args) ->
+  [Steps, Scale] = lists:map(fun erlang:list_to_integer/1, Args),
+  [InputFile, OutputFile] = ["data/input.txt", "data/output.txt"],
   D0 = read_file(InputFile),
   file:delete(OutputFile),
   write_file(OutputFile, D0, Scale),
-  DLast = make_steps(D0, Steps, Scale, OutputFile),
-  DLast.
-%%   erlang:halt().
+  make_steps(D0, Steps, Scale, OutputFile),
+  erlang:halt().
 
 %performs steps
 make_steps(D, Count, Scale, OutputFile) when Count > 0 ->
@@ -53,8 +54,7 @@ process_cell({X,Y}, D, D1) ->
     true ->
       DD = dict:store({X,Y}, 1, D1),
       DD;
-    false ->
-      D1
+    false -> D1
   end.
 %---
 
